@@ -2,15 +2,16 @@ import clutter
 import time
 import os
 import glib
+import keypos
 canbus = open("/home/eric/uwaft-hmi/canmsg", "r+")
 
 class gui:
 
 	# handle data from the canbus
 	def update(self, source, cond):
-		str = source.readline() 
-		print str.strip()
-		self.text1.set_text(str)		
+		data = source.readline() 
+		print keypos.getpos(data)
+		self.text1.set_text(str(keypos.getpos(data)))		
 		
 		# return true to keep handling
 		# input from the canbus pipe
