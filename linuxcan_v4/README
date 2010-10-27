@@ -1,0 +1,107 @@
+/*
+** Copyright 2002-2009 KVASER AB, Sweden.  All rights reserved.
+*/
+
+
+- Linux drivers for Kvaser PCIcan, PCIcan II, USBcanII and Leaf -
+
+System requirements:
+
+* Linux 2.6
+* System setup for kernel compilation.
+
+NOTE! Read ReleaseNotes before using the driver.
+
+
+Compilation:
+
+* logged in as root do:
+  "make"/"make install" to build/install all drivers
+
+* to build just a single driver:
+  "make pcican_install"/ "make leaf_install" 
+
+View/change default settings in settings.mak.
+
+
+Usage:
+
+* "modprobe pcican" or "modprobe pcicanII" to load driver.
+* "modprobe -r pcican" or "modprobe -r pcicanII" to unload driver.
+* USBcanII and Leaf will load/unload when inserting/removing the device.
+* Try examples in /usr/doc/canlib/examples/.
+
+
+
+
+Installed Files:
+
+* Driver modules
+----------------------------------
+/lib/modules/`uname -r`/kernel/drivers/char/kvpcican.ko (PCIcan)
+/lib/modules/`uname -r`/kernel/drivers/char/kvpcicanII.ko (PCIcanII)
+/lib/modules/`uname -r`/kernel/drivers/char/kvvirtualcan.ko (Virtualcan)
+/lib/modules/`uname -r`/kernel/drivers/usb/misc/usbcanII.ko (USBcanII)
+/lib/modules/`uname -r`/kernel/drivers/usb/misc/leaf.ko (Leaf)
+
+* Module setup
+----------------------------------
+The following lines are added to /etc/modprobe.conf for PCIcan:
+
+    alias pcican kvpcican
+    install kvpcican /usr/sbin/pcican.sh start
+    remove kvpcican /usr/sbin/pcican.sh stop
+
+The following lines are added to /etc/modules.conf for PCIcan II:
+
+    alias pcicanII kvpcicanII
+    install kvpcicanII /usr/sbin/pcicanII.sh start
+    remove kvpcicanII /usr/sbin/pcicanII.sh stop
+
+The following lines are added to /etc/modules.conf for Virtualcan:
+
+    alias virtualcan kvvirtualcan
+    install virtualcan /usr/sbin/virtualcan.sh start
+    remove kvvirtualcan /usr/sbin/virtualcan.sh stop
+
+
+* Module loading
+----------------------------------
+/usr/sbin/pcican.sh     (start/stop pcican driver;     by modprobe or manually)
+/usr/sbin/pcicanII.sh   (start/stop pcicanII driver;   by modprobe or manually)
+/usr/sbin/virtualcan.sh (start/stop virtualcan driver; by modprobe or manually)
+/usr/sbin/usbcanII.sh   (start/stop usbcanII driver;   by udev or manually)
+/usr/sbin/leaf.sh       (start/stop leaf driver;       by udev or manually)
+
+* Module hotplug support
+----------------------------------
+If /etc/hotplug exists:
+/etc/hotplug/usbcanII.usermap
+/etc/hotplug/usb/usbcanII
+/etc/hotplug/leaf.usermap
+/etc/hotplug/usb/leaf
+
+/etc/udev/rules.d/10-kvaser.rules
+
+* Include files for canlib library
+----------------------------------
+/usr/include/canlib.h
+/usr/include/canstat.h
+
+* Canlib library and links
+----------------------------------
+/usr/lib/libcanlib.so
+/usr/lib/libcanlib.so.1.0.1
+/usr/lib/libcanlib.so.1
+
+* Canlib documentation
+----------------------------------
+/usr/doc/canlib/HTMLhelp
+
+* Canlib examples
+----------------------------------
+/usr/doc/canlib/examples
+
+* Canlib Makefile template
+----------------------------------
+/usr/doc/canlib/examples/Makefile
