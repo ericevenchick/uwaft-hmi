@@ -17,13 +17,17 @@
 //log string to file
 void logs(char *msg)
 {
+	char line[100];
+	
 	//open log
 	FILE *fLog;
 	fLog = fopen(LOGFILE, "a");
 	if (fLog == NULL)
 		return;
+
 	//write the message
-	fputs(msg, fLog);
+	sprintf(line, "%s\n", msg);
+	fputs(line, fLog);
 	fclose(fLog);
 	return;
 
@@ -32,7 +36,7 @@ void logs(char *msg)
 //handle signals that want us to end
 void handle_signal(int sig)
 {
-	logs("Caught signal, exiting...\n");	
+	logs("Caught signal, exiting...");	
     //stop the IPC
     stop_ipc();
 	exit(0);
@@ -84,11 +88,11 @@ int main()
 	int status = 0;         // stores any error codes
     char msg[CANMSGLENGTH]; // stores a message received from the bus 
 	
-    //clear the log
+    // clear the log
 	fclose(fopen(LOGFILE, "w"));
-    
+	
 	// start up CAN
-    logs("Starting CAN...\n");
+    logs("Starting CAN...");
     if ( (canH = can_init(0)) < 0)
     {
         // error. get the message, report it, and terminate
@@ -97,11 +101,11 @@ int main()
         printf("Could not init CAN: %s.\n", errmsg);
 		exit(EXIT_FAILURE);
     }
-
-    //start the ipc
+    
+	// start the ipc
     if (start_ipc() < 0)
     {
-        logs("Could not start IPC!\n");
+        logs("Could not start IPC!");
         printf("Could not start IPC!\n");
         exit(EXIT_FAILURE);
     }
@@ -110,13 +114,13 @@ int main()
     // become a daemon
 	if (daemonize() < 0)
 	{
-        logs("Could not start daemon!\n");
+        logs("Could not start daemon!");
 		printf("Could not start daemon!\n");
 		exit(EXIT_FAILURE);
 	}
 
 	//main loop
-    logs("Entering main loop...\n");
+    logs("Entering main loop...");
     while (1)
 	{
         //  get a message (ID 0x1F1 has the data on key position
