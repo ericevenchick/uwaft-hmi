@@ -12,7 +12,7 @@ def getpos(msg):
 	elif key == 170:
 		return "Crank"
 	else:
-		return key
+		pass
 
 if __name__ == "__main__":
 	f = open("/home/eric/uwaft-hmi/canmsg", "r+")
