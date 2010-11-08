@@ -8,6 +8,6 @@
 #define CANBITRATE BAUD_500K        
 
 int can_init(int channel);
-int can_get_msg(int handle, char* msg, int bufsize);
+int can_get_msg(int handle, char* msg, int wantidlow, int wantidhigh);
 
 #endif

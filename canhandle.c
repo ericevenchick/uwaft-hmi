@@ -36,18 +36,18 @@ int can_init(int channel)
     return handle;
 }
 /* 
-    int can_get_msg(int handle, char* msg, int wantid)
-        takes the handle to the bus to read from, a pointer to a string to store the message in and 
-        the message ID of the only message to pay attention to (all others are thrown away) 
+    int can_get_msg(int handle, char* msg, int wantidlow, wantidhigh)
+        takes the handle to the bus to read from, 
+		a pointer to a string to store the message in and 
+        the range of IDs to respond to to (all others are ignored) 
         returns 0 on no error, or an error. sets msg to a string in format
         id-dlc-byte0-byte1-...-byteCANMSGLENGTH
     Notes:
     TODO:
-        Allow request of multiple IDs (in an array?)
         error checking? return error values!
 */
-int can_get_msg(int handle, char* msg, int wantid)
-{
+int can_get_msg(int handle, char* msg, int wantidlow, int wantidhigh)
+{ 
     long id;                    // id of message
     char data[CANMSGLENGTH];    // data bytes of message
     unsigned int dlc;           // Data Length Code (how many bytes in the message)
@@ -58,7 +58,7 @@ int can_get_msg(int handle, char* msg, int wantid)
     // get the message from the Kvaser hardware 
     canReadWait(handle, &id, data, &dlc, &flags, &timestamp, -1); 
     // check if we have a message of requested ID
-    if (id == wantid)
+    if (id >= wantidlow && id <= wantidhigh)
     {
         // if so, create a string in the format id-dlc-byte0-byte1-...-byteCANMSGLENGTH
         sprintf(msg, "%ld-%u", id, dlc);
