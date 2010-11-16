@@ -21,9 +21,7 @@ class bar :
 		for i in range(0,self.segs):
 			self.target.remove(self.rects[i])
 			self.rects[i].hide()
-
 	def set_segs(self, segs):
 		self.hide()
 		self.segs = segs
 		self.show()
-

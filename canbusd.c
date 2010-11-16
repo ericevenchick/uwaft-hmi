@@ -123,10 +123,8 @@ int main()
     logs("Entering main loop...");
     while (1)
 	{
-        //  get a message (ID 0x1F1 has the data on key position
-        //  so i've hard coded it into here for now. This will be
-        //  replaced, but it can be used for a nice demo :) )
-        status = can_get_msg(canH, msg, 0x1F1, 0x1F1);
+        // Get a message in range 0xA0 - 0XA0 (HMI Status Messages) 
+        status = can_get_msg(canH, msg, 0xA0, 0xA0);
         if (status < 0)
         {
             canGetErrorText(status, errmsg, 100);

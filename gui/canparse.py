@@ -3,7 +3,6 @@ import os
 def get_key(msg): 
 	# split the message into parts
 	data = msg.split('-')
-	# GMLAN ID containing key position data
 	key = int(data[2][-2:], 16)
 	if key == 128:
 		return "Off"
@@ -16,12 +15,13 @@ def get_key(msg):
 	else:
 		return None
 
-if __name__ == "__main__":
-	f = open("/home/eric/uwaft-hmi/canmsg", "r+")
-	lastline = ""
-	while 1:
-		line = getpos(f.readline())
-		if line != lastline:
-			print line
-			lastline = line
+def get_soc(msg):
+	data = msg.split('-')
+	soc = int(data[3], 16)
+	return soc
+
+def get_hvil(msg):
+	data = msg.split('-')
+	hvil = int(data[2][-3], 16)
+	return hvil
 
