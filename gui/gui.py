@@ -14,27 +14,32 @@ class gui:
 		# and remove the newline
 		data = source.readline()
 		data = data.strip()
+		print data
 		# get the message id so we can determine
 		# what should be updated
-		canid = int(data.split('-')[0])
-
+		canid = -1
+		try:
+			canid = int(data.split('-')[0])
+		except ValueError:
+			pass
 		try:
 			# HMI_Tx1 Message
-			if canid == 0xA0:
+			if canid == 160:
 				# display key data
 				msg = canparse.get_key(data)		
 				if msg != None: 
 					self.keypos_label.set_text(msg)
 				# display SOC data
 				soc = canparse.get_soc(data)
-				self.soc_bar.set_segs(soc/10%10)
+				if soc == 100:
+					self.soc_bar.set_segs(10)
+				else:
+					self.soc_bar.set_segs((soc/10)%11+1)
 				self.soc_label.set_text("SOC: " + str(soc) + "%")
 				# display HVIL on/off
 				hvil = canparse.get_hvil(data)
-				self.hvil_label.set_text(str(hvil))
+				self.hvil_label.set_text("HVIL: " + str(hvil))
 		except (IndexError):
-			print "IndexError"
-			print data
 			pass
 		# return true to keep handling
 		# input from the canbus pipe
@@ -71,9 +76,9 @@ class gui:
 		self.soc_bar = bar.bar(self.stage, 40, 40)
 		self.stage.add(self.soc_label)
 		
-		# Drive Cycle Display
+		# HVIL Enabled Display
 		self.hvil_label = clutter.Text()
-		self.hvil_label.set_text("EV")
+		self.hvil_label.set_text("")
 		self.hvil_label.set_size(100,25)
 		self.hvil_label.set_font_name("Helvetica 25")
 		self.hvil_label.set_color(clutter.Color(255,255,255))
