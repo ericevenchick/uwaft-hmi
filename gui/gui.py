@@ -4,7 +4,7 @@ import os
 import glib
 import canparse
 import bar
-xsize = 500
+xsize = 750
 ysize = 500
 next_button_tex = clutter.cogl.texture_new_from_file('/home/eric/uwaft-hmi/gui/img/next-button.svg', clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
 
@@ -55,10 +55,10 @@ class gui:
 	def close(self):
 		canbus.close()
 		clutter.main_quit()
-	def __init__(self, canbusfile):
+	def __init__(self, canbusfile, configfile):
 		
 		# Setup info pages
-		self.build_display('config')
+		self.build_display(configfile)
 
 		# Open the can bus pipe
 		self.canbus = open(canbusfile, "r+")
@@ -70,8 +70,8 @@ class gui:
 	    
 		# Next page button
 		self.next_button = clutter.Texture()
-		self.next_button.set_size(75, 45)
-		self.next_button.set_position(xsize-75,0)
+		self.next_button.set_size(65, 50)
+		self.next_button.set_position(xsize-70,0)
 		self.next_button.set_cogl_texture(next_button_tex)
 		self.next_button.set_reactive(True)
 		self.next_button.connect("button-press-event", self.next_button_clicked)
@@ -85,8 +85,7 @@ class gui:
 		self.h2_alarm_label.set_font_name("Helvetica Bold 75")
 		self.h2_alarm_label.set_color(clutter.Color(0,0,0))
 		self.h2_alarm_label.set_position(xsize/2-75, ysize-100)
-		self.pages[0].append(self.h2_alarm_label)
-		self.pages[1].append(self.h2_alarm_label)
+		self.stage.add(self.h2_alarm_label)
 		# Start with page 0
 		self.set_page(0)
 		# allow quit
@@ -103,9 +102,10 @@ class gui:
 		self.curpage = -1
 		# store the pages and number of elements on each page
 		self.pages = []
+		elcount = []
 		for i in range(1,self.numpages+1):
 			self.pages.append([])
-		elcount = [0] * self.numpages
+			elcount.append([0,0])
 		
 		# create the labels
 		for line in config_file.readlines():
@@ -116,11 +116,17 @@ class gui:
 			newlabel.set_size(25,100)
 			newlabel.set_font_name("Helvetica 25")
 			newlabel.set_color(clutter.Color(255,255,255))
-			newlabel.set_position(40, 5+40*elcount[page])
+			y = 5+40*elcount[page][1]
+			if y > ysize-50:
+				y = 5
+				elcount[page][0] = elcount[page][0]+1
+				elcount[page][1] = 0
+			x = 40 + elcount[page][0]*250
+			newlabel.set_position(x,y) 
 			newlabel.handler = handler.strip()
 			newlabel.original_text = text
 			self.pages[page].append(newlabel)
-			elcount[page] = elcount[page] + 1
+			elcount[page][1] = elcount[page][1] + 1
 
 	def set_page(self, n):
 		# remove elements on current page
