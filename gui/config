@@ -1,0 +1,5 @@
+3
+0,SOC:,get_soc
+0,HVIL:,get_hvil
+0,Temp:,get_temp
+1,Key:,get_key

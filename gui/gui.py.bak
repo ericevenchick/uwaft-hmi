@@ -9,13 +9,6 @@ ysize = 500
 next_button_tex = clutter.cogl.texture_new_from_file('/home/eric/uwaft-hmi/gui/img/next-button.svg', clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
 
 batt_temp_tex = clutter.cogl.texture_new_from_file('/home/eric/uwaft-hmi/gui/img/batt-temp.svg', clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
-
-class can_label(clutter.Text):
-	def __init__(self):
-		clutter.Text.__init__(self)
-		self.handler = ""
-		self.original_text = ""
-
 class gui:
 	# handle data from the canbus
 	def update(self, source, cond):
@@ -32,12 +25,19 @@ class gui:
 		except ValueError:
 			pass
 		try:
-				# handle can_labels
-				for page in self.pages:
-					for el in page:
-						if hasattr(el, "handler"):
-							value = getattr(canparse, el.handler)(data)
-							el.set_text(el.original_text + " " + str(value))
+			# HMI_Tx1 Message
+			if canid == 160:
+				# display key data
+				msg = canparse.get_key(data)		
+				if msg != None: 
+					self.keypos_label.set_text(msg)
+				# display SOC data
+				soc = canparse.get_soc(data)
+				self.soc_label.set_text("SOC: " + str(soc) + "%")
+				
+				# display HVIL on/off
+				hvil = canparse.get_hvil(data)
+				self.hvil_label.set_text("HVIL: " + str(hvil))
 
 				# display H2 Alarm
 				h2_alarm = canparse.get_h2_alarm(data)
@@ -47,6 +47,10 @@ class gui:
 				else:
 					self.h2_alarm_label.set_text("")
 					self.stage.set_color(clutter.Color(0,0,0))
+
+				# display temp
+				temp = canparse.get_temp(data)
+				self.temp_label.set_text("Temp: " + str(temp) + u"\u00B0" + "C")
 		except (IndexError):
 			pass
 		# return true to keep handling
@@ -56,9 +60,11 @@ class gui:
 		canbus.close()
 		clutter.main_quit()
 	def __init__(self, canbusfile):
+		# Holds the elements of each page
+		self.pages = [[],[]]
 		
-		# Setup info pages
-		self.build_display('config')
+		# The current page number (-1 for none)
+		self.curpage = -1
 
 		# Open the can bus pipe
 		self.canbus = open(canbusfile, "r+")
@@ -76,7 +82,49 @@ class gui:
 		self.next_button.set_reactive(True)
 		self.next_button.connect("button-press-event", self.next_button_clicked)
 		self.stage.add(self.next_button)
+
+		# Key Position (Page 0) 
+		self.keypos_label = clutter.Text()
+		self.keypos_label.set_text("Off")
+		self.keypos_label.set_size(25,100)
+		self.keypos_label.set_font_name("Helvetica 25")
+		self.keypos_label.set_color(clutter.Color(255,255,255))
+		self.keypos_label.set_position(40, 95)
+		self.pages[0].append(self.keypos_label)
 		
+		# SOC Display (Page 0)
+		self.soc_label = clutter.Text()
+		self.soc_label.set_text("SOC:")
+		self.soc_label.set_size(100,25)
+		self.soc_label.set_font_name("Helvetica 25")
+		self.soc_label.set_color(clutter.Color(255,255,255))
+		self.soc_label.set_position(40, 5)
+		#self.soc_bar = bar.bar(self.stage, 40, 40)
+		self.pages[0].append(self.soc_label)
+		
+		# HVIL Enabled Display (Page 0)
+		self.hvil_label = clutter.Text()
+		self.hvil_label.set_text("HVIL: ")
+		self.hvil_label.set_size(100,25)
+		self.hvil_label.set_font_name("Helvetica 25")
+		self.hvil_label.set_color(clutter.Color(255,255,255))
+		self.hvil_label.set_position(40, 50)
+		self.pages[0].append(self.hvil_label)
+		
+		# Temp Display (Page 0)
+		self.temp_label = clutter.Text()
+		self.temp_label.set_text("Temp: ")
+		self.temp_label.set_size(100,25)
+		self.temp_label.set_font_name("Helvetica 25")
+		self.temp_label.set_color(clutter.Color(255,255,255))
+		self.temp_label.set_position(40, 140)
+		self.pages[0].append(self.temp_label)
+		
+		self.temp_ico = clutter.Texture()
+		self.temp_ico.set_size(70, 60)
+		self.temp_ico.set_position(100,200)
+		self.temp_ico.set_cogl_texture(batt_temp_tex)
+		self.pages[0].append(self.temp_ico)
 
 		# H2 Alarm Display (Page 0,1)
 		self.h2_alarm_label = clutter.Text()
@@ -94,33 +142,6 @@ class gui:
 		# set up to watch the canbus with handler
 		# function self.update
 		glib.io_add_watch(self.canbus, glib.IO_IN, self.update)
-	
-	def build_display(self,config):
-		config_file = open(config, "r+")
-		# get the number of pages (first line of file)
-		self.numpages = int(config_file.readline())
-		# The current page number (-1 for none)
-		self.curpage = -1
-		# store the pages and number of elements on each page
-		self.pages = []
-		for i in range(1,self.numpages+1):
-			self.pages.append([])
-		elcount = [0] * self.numpages
-		
-		# create the labels
-		for line in config_file.readlines():
-			page,text,handler = line.split(',')	
-			page = int(page)
-			newlabel = can_label()
-			newlabel.set_text(text)
-			newlabel.set_size(25,100)
-			newlabel.set_font_name("Helvetica 25")
-			newlabel.set_color(clutter.Color(255,255,255))
-			newlabel.set_position(40, 5+40*elcount[page])
-			newlabel.handler = handler.strip()
-			newlabel.original_text = text
-			self.pages[page].append(newlabel)
-			elcount[page] = elcount[page] + 1
 
 	def set_page(self, n):
 		# remove elements on current page
@@ -134,7 +155,7 @@ class gui:
 			el.show()
 		self.curpage = n
 	def next_button_clicked(self, source, cond):
-		self.set_page((self.curpage + 1) % self.numpages)
+		self.set_page((self.curpage + 1) % 2)
 	def start(self):
 		self.stage.show_all()
 		clutter.main()
