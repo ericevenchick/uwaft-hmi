@@ -4,7 +4,7 @@
 0,b,Bit:,2
 0,b,Bit:,3
 0,t,Data Page 1,none
-0,n,SOC:,%,8,8,2
+0,n,SOC:,%,8,8,0.5
 0,b,H2:,3
 0,n,Temp:,C,16,8,1
 1,t,Data Page 2,none

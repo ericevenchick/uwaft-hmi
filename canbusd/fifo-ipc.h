@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#define FIFOFILE "/home/eric/uwaft-hmi/canmsg"
 
 int start_ipc();
 

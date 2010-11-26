@@ -5,5 +5,8 @@ hmi.py is used to start the HMI
 gui/ contains
 	gui.py: the GUI for the HMI
 	canparse.py: a library to parse specific CAN messages to useful values
-	bar.py: a GUI element which shows a progress bar
-
+	config: configuration file for display
+		Format: 
+			label 	(t): page#,t,text,handler
+			number	(n): page#,n,text,units,startbit,length,scalefactor
+			bool	(b): page#,b,text,bit

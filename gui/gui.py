@@ -19,8 +19,15 @@ class can_label(clutter.Text):
 			
 	def can_update(self, data):
 		try:
-			newtext = str(getattr(canparse, self.handler)(data))
+			# does the handler exist?
+			if hasattr(canparse, self.handler):
+				# call the handler
+				newtext = str(getattr(canparse, self.handler)(data))
+			else:
+				# treat this like a static label
+				newtext = ""
 		except IndexError:
+			# no data to retrieve, ignore
 			return
 		self.set_text(self.original_text + " " + newtext)
 
@@ -34,12 +41,14 @@ class can_number(clutter.Text):
 		self.units = arglist[0]
 		self.sigstartbit = int(arglist[1])
 		self.siglength = int(arglist[2])
-		self.scalefactor = int(arglist[3])
+		self.scalefactor = float(arglist[3])
 
 	def can_update(self, data):
 		try:
-			newtext = str(canparse.get_bits(data, self.sigstartbit, self.siglength)/self.scalefactor)
+			# get the value and multiply by the scale
+			newtext = str(canparse.get_bits(data, self.sigstartbit, self.siglength)*self.scalefactor)
 		except IndexError:
+			# no worries, no data was passed
 			return
 		self.set_text(self.original_text + " " + newtext + " " + self.units)
 
@@ -168,22 +177,27 @@ class gui:
 				newlabel.set_size(25,100)
 				newlabel.set_font_name("Helvetica 25")
 				newlabel.set_color(clutter.Color(255,255,255))
+				# find the position for element
 				y = 5+40*elcount[page][1]
 				if y > ysize-50:
+					# go to next column
 					y = 5
 					elcount[page][0] = elcount[page][0]+1
 					elcount[page][1] = 0
+				# each column has width 320
 				x = 40 + elcount[page][0]*320
 				newlabel.set_position(x,y) 
 				self.pages[page].append(newlabel)
 
 				newbool = can_bool(args)
 				newbool.set_size(25, 25)
+				# just position relative to the label
 				newbool.set_position(x + 220, y+7)
 				newbool.set_cogl_texture(newbool.false_tex)
 				self.pages[page].append(newbool)
 				
 				elcount[page][1] = elcount[page][1] + 1
+
 			# text display
 			if disptype == 't':
 				newlabel = can_label(text, args)

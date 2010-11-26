@@ -1,5 +1,4 @@
 #include "fifo-ipc.h"
-#define FIFOFILE "/home/eric/uwaft-hmi/canmsg"
 
 //Initialize the IPC
 
