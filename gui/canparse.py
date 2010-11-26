@@ -33,11 +33,10 @@ def get_soc(msg):
 	return str(soc) + "%"
 
 def get_hvil(msg):
-	hvil = get_value(msg, 1, 0x4)
-	if hvil > 0:
-		return "On"
-	else:
-		return "Off"
+	return get_value(msg, 1, 0x4)
+
+def get_fcs(msg):
+	return get_value(msg, 1, 0x10)
 
 def get_h2_alarm(msg):
 	status = get_value(msg, 1, 0x8)

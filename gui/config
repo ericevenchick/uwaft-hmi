@@ -1,34 +1,18 @@
-3
-0,Page 1,none
-0,SOC:,get_soc
-0,HVIL:,get_hvil
-0,Temp:,get_temp
-1,Page 2,none
-1,Key:,get_key
-2,Page 3,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
-2,Test,none
+2
+0,t,Page 1,none
+0,t,SOC:,get_soc
+0,b,HVIL:,get_hvil
+0,b,HVIL:,get_hvil
+0,b,HVIL:,get_hvil
+0,b,HVIL:,get_hvil
+0,b,HVIL:,get_hvil
+0,b,FCS Enabled:,get_fcs
+0,b,FCS Enabled:,get_fcs
+0,b,FCS Enabled:,get_fcs
+0,b,FCS Enabled:,get_fcs
+0,b,FCS Enabled:,get_fcs
+0,b,FCS Enabled:,get_fcs
+0,b,FCS Enabled:,get_fcs
+0,t,Temp:,get_temp
+1,t,Page 2,none
+1,t,Key:,get_key
