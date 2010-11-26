@@ -1,5 +1,30 @@
 import time
 import os
+
+def get_bits(msg, startbit, length):
+	data = msg.split('-')
+	# byte to start on, add 2 to ignore id and DLC
+	byte = startbit / 8 + 2
+	# the bit number local to byte 
+	bit = startbit % 8
+	# the bit number, global to message
+	bitnum = startbit
+	value = 0
+	for x in range(0, length):
+		# is the xth byte a 1?
+		if int(data[byte], 16) & (1 << bit):
+			value = value + (1 << x)
+		# if we will go to the next byte, go back one byte, start at bit 0
+		if (bitnum + 1)/8 > bitnum/8:
+			bit = 0
+			byte = byte - 1
+			bitnum = bitnum - 7
+		else:
+			bit = bit + 1
+			bitnum = bitnum + 1
+
+	return value
+
 def get_value(msg, byte, mask):
 	# field 0 is ID, field 1 is DLC, bytes start at 2
 	byte = byte + 1
@@ -14,7 +39,7 @@ def none(msg):
 	return ""
 
 def get_key(msg): 
-	key = get_value(msg, 1, 0x3)
+	key = get_bits(msg, 0, 2)
 	if key == 0:
 		return "Off"
 	elif key == 1:
@@ -27,7 +52,8 @@ def get_key(msg):
 		return None
 
 def get_soc(msg):
-	soc = get_value(msg, 2, 0xFF) 
+	#soc = get_value(msg, 2, 0xFF) 
+	soc = get_bits(msg, 8, 8)
 	# scale
 	soc = soc/2
 	return str(soc) + "%"

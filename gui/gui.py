@@ -3,7 +3,6 @@ import time
 import os
 import glib
 import canparse
-import bar
 xsize = 750
 ysize = 500
 
@@ -12,19 +11,56 @@ next_button_tex = clutter.cogl.texture_new_from_file('/home/eric/uwaft-hmi/gui/i
 batt_temp_tex = clutter.cogl.texture_new_from_file('/home/eric/uwaft-hmi/gui/img/batt-temp.svg', clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
 
 class can_label(clutter.Text):
-	def __init__(self):
+	def __init__(self, text, args):
 		clutter.Text.__init__(self)
-		self.handler = ""
-		self.original_text = ""
+		self.set_text(text)
+		self.original_text = text
+		self.handler = args
+			
+	def can_update(self, data):
+		try:
+			newtext = str(getattr(canparse, self.handler)(data))
+		except IndexError:
+			return
+		self.set_text(self.original_text + " " + newtext)
+
+class can_number(clutter.Text):
+	def __init__(self, text, args):
+		clutter.Text.__init__(self)
+		self.set_text(text)
+		self.original_text = text
+		self.units = ""
+		arglist = args.strip().split(',')
+		self.units = arglist[0]
+		self.sigstartbit = int(arglist[1])
+		self.siglength = int(arglist[2])
+		self.scalefactor = int(arglist[3])
+
+	def can_update(self, data):
+		try:
+			newtext = str(canparse.get_bits(data, self.sigstartbit, self.siglength)/self.scalefactor)
+		except IndexError:
+			return
+		self.set_text(self.original_text + " " + newtext + " " + self.units)
+
 
 class can_bool(clutter.Texture):
-	def __init__(self):
-		clutter.Texture.__init__(self)
-		self.handler = ""
-		self.state = False
+	def __init__(self, args):
+		clutter.Texture.__init__(self, args)
+		self.sigbit = int(args)
+		
 		self.true_tex = clutter.cogl.texture_new_from_file('/home/eric/uwaft-hmi/gui/img/bool-true.svg', clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
 		self.false_tex = clutter.cogl.texture_new_from_file('/home/eric/uwaft-hmi/gui/img/bool-false.svg', clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
-
+	
+	def can_update(self, data):
+		try:
+			value = canparse.get_bits(data, self.sigbit, 1) 
+		except IndexError:
+			return
+		if value:
+			self.set_cogl_texture(self.true_tex)
+		else:
+			self.set_cogl_texture(self.false_tex)
 class gui:
 	# handle data from the canbus
 	def update(self, source, cond):
@@ -43,33 +79,23 @@ class gui:
 			canid = int(data.split('-')[0])
 		except ValueError:
 			pass
-		try:
-				# handle can_labels
-				for page in self.pages:
-					for el in page:
-						if el.__class__ == can_label:
-							value = getattr(canparse, el.handler)(data)
-							el.set_text(el.original_text + " " + str(value))
-						elif el.__class__ == can_bool:
-							value = getattr(canparse, el.handler)(data)
-							if value > 0:
-								el.state = True
-								el.set_cogl_texture(el.true_tex)
-							else:
-								el.state = False
-								el.set_cogl_texture(el.false_tex)
-				# display H2 Alarm
-				h2_alarm = canparse.get_h2_alarm(data)
-				if h2_alarm:
-					self.h2_alarm_label.set_text("H2!")
-					self.stage.set_color(clutter.Color(255,0,0))
-				else:
-					self.h2_alarm_label.set_text("")
-					self.stage.set_color(clutter.Color(0,0,0))
-		except (IndexError):
-			pass
-		# return true to keep handling
-		# input from the canbus pipe
+
+		# update display elements
+		for page in self.pages:
+			for el in page:
+				if hasattr(el, "can_update"):
+					el.can_update(data)
+
+		# display H2 Alarm
+		h2_alarm = canparse.get_h2_alarm(data)
+		if h2_alarm:
+			self.h2_alarm_label.set_text("H2!")
+			self.stage.set_color(clutter.Color(255,0,0))
+		else:
+			self.h2_alarm_label.set_text("")
+			self.stage.set_color(clutter.Color(0,0,0))
+
+		# return true to keep handling input from the canbus pipe
 		return True
 	def close(self):
 		canbus.close()
@@ -131,12 +157,13 @@ class gui:
 		
 		# create the elements
 		for line in config_file.readlines():
-			page,disptype,text,handler= line.strip().split(',')	
+			page,disptype,text,args = line.strip().split(',',3)	
 			page = int(page)
 
 			# boolean display
 			if disptype == 'b':
-				newlabel = can_label()
+				# create a constant label (no handler)
+				newlabel = can_label(text, "none")
 				newlabel.set_text(text)
 				newlabel.set_size(25,100)
 				newlabel.set_font_name("Helvetica 25")
@@ -148,23 +175,18 @@ class gui:
 					elcount[page][1] = 0
 				x = 40 + elcount[page][0]*320
 				newlabel.set_position(x,y) 
-				newlabel.handler = "none"
-				newlabel.original_text = text
 				self.pages[page].append(newlabel)
 
-				newbool = can_bool()
+				newbool = can_bool(args)
 				newbool.set_size(25, 25)
 				newbool.set_position(x + 220, y+7)
 				newbool.set_cogl_texture(newbool.false_tex)
-				newbool.handler = handler
-				newbool.state = False
 				self.pages[page].append(newbool)
 				
 				elcount[page][1] = elcount[page][1] + 1
 			# text display
 			if disptype == 't':
-				newlabel = can_label()
-				newlabel.set_text(text)
+				newlabel = can_label(text, args)
 				newlabel.set_size(25,100)
 				newlabel.set_font_name("Helvetica 25")
 				newlabel.set_color(clutter.Color(255,255,255))
@@ -175,11 +197,26 @@ class gui:
 					elcount[page][1] = 0
 				x = 40 + elcount[page][0]*320
 				newlabel.set_position(x,y) 
-				newlabel.handler = handler
 				newlabel.original_text = text
 				self.pages[page].append(newlabel)
 				elcount[page][1] = elcount[page][1] + 1
-				config_file.close()
+			# number display
+			if disptype == 'n':
+				newlabel = can_number(text, args)
+				newlabel.set_size(25,100)
+				newlabel.set_font_name("Helvetica 25")
+				newlabel.set_color(clutter.Color(255,255,255))
+				y = 5+40*elcount[page][1]
+				if y > ysize-50:
+					y = 5
+					elcount[page][0] = elcount[page][0]+1
+					elcount[page][1] = 0
+				x = 40 + elcount[page][0]*320
+				newlabel.set_position(x,y) 
+				newlabel.original_text = text
+				self.pages[page].append(newlabel)
+				elcount[page][1] = elcount[page][1] + 1
+		config_file.close()
 	def set_page(self, n):
 		# remove elements on current page
 		# do not remove if this is the first page set
