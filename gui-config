@@ -1,0 +1,23 @@
+# GUI Configuration File
+# Each line repersents one display element or page of one of these types
+#	Label: 		page#,t,label,handler
+#	Number: 	page#,n,label,units,canbus,canmsgid,startbit,length,scalefactor
+#	Boolean:	page#,b,label,canbus,canmsgid,bit
+#	Page:		page#,p,pagename
+
+# THIS IS A SAMPLE!
+# the main page
+1,p,test
+
+2,t,Page 2
+2,t,Key:,get_key
+2,b,Bit:,1,497,0
+2,b,Bit:,1,497,1
+2,b,Bit:,1,497,2
+2,b,Bit:,1,497,3
+2,b,Bit:,2,497,0
+2,b,Bit:,2,497,1
+2,b,Bit:,2,497,2
+2,b,Bit:,2,497,3
+2,b,H2:,1,160,3
+2,n,Brake:,%,1,241,8,8,0.392157

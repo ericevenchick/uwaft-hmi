@@ -1,0 +1,107 @@
+#!/usr/bin/python
+# Main entry point for HMI. Creates CAN bus connector with canbusd and starts
+# the GUI 
+
+# TODO: 	
+#			Migrate glib file watch to here, so a logger can be implmented too
+
+import subprocess
+import os
+import sys
+import time
+import glib
+from gui import gui 
+
+# set files here
+CANBUSFILE = "canrx"
+GUICONFIGFILE = "gui-config"
+
+class hmi:
+	def start_can(self):
+		# check if canbusd is already running
+		# note, this is probably not the best way of doing it...
+		ps = subprocess.Popen(["ps", "-C", "canbusd"], stdout=subprocess.PIPE)
+		if len(ps.stdout.readlines()) > 1:
+			print "CAN bus is already in use."
+			print "Quitting..."
+			sys.exit(1)
+		
+		# at this point, if the CANBUSFILE is present, it can be deleted
+		if os.path.exists(CANBUSFILE):
+			os.remove(CANBUSFILE)
+			print "Removing old CAN bus pipe..."
+	
+		# start the canbus daemon
+		self.proc = subprocess.Popen("/home/eric/uwaft-hmi/canbusd/canbusd", stdout=subprocess.PIPE) 
+	
+		# wait for CAN to start
+		time.sleep(0.1)
+	
+		# check the status of canbusd
+		self.proc.poll()
+
+		# make sure the canbus started
+		if self.proc.returncode != 0:
+			print "Error starting CAN:"
+			for line in self.proc.stdout.readlines():
+				print "\t" + line,
+				print "Quitting..."
+				sys.exit(1)
+	
+	def update(self, source, cond):
+		# handle messages from CAN bus
+	
+		# call the GUI update
+		self.gui.update(source, cond)
+		
+		# return true to keep handling messages
+		return True
+
+	def main(self):
+	
+		# check that the config file exists
+		if (not os.path.exists(GUICONFIGFILE)):
+				print "No config file found!"
+				print "Quitting..."
+				sys.exit(1)
+
+		# For debugging, see if we've started in 'virtual mode' (no actual CAN bus)
+		virtual = False
+		try:
+			virtual = sys.argv[1] == "-v"
+		except IndexError:
+			pass
+		if virtual:
+			# virtual mode makes a FIFO and does not connect to CAN
+			print "Starting in virtual mode"
+			if (not os.path.exists(CANBUSFILE)):
+				os.mkfifo(CANBUSFILE)
+		else:
+			# otherwise, start CAN
+			self.start_can()
+		
+		# set up CAN bus polling
+		self.canbus = open(CANBUSFILE, "r+")
+		glib.io_add_watch(self.canbus, glib.IO_IN, self.update)
+		
+		# set up the GUI
+		self.gui = gui.gui(GUICONFIGFILE)
+
+		# enter main loop
+		self.gui.start()
+
+		# clean up
+		# kill canbusd only if it's been started
+		if not virtual:
+			# note: this isn't the best way to do this?
+			os.system("killall canbusd")
+		else:
+			# clean up the fake CAN FIFO
+			os.remove(CANBUSFILE)
+
+		print "Quitting..."
+		
+
+if __name__ == "__main__":
+	h = hmi()
+	h.main()

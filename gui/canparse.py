@@ -39,6 +39,8 @@ def none(msg):
 	return ""
 
 def get_key(msg): 
+	if int(msg.strip().split('-')[0]) != 497:
+		return
 	key = get_bits(msg, 0, 2)
 	if key == 0:
 		return "Off"
