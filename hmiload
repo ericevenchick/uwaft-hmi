@@ -1,0 +1,2 @@
+#!/bin/sh
+xinit /home/eric/uwaft-hmi/hmi -v

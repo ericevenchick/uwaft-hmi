@@ -83,25 +83,47 @@ int daemonize()
 
 int main()
 {
-    int canH;               // the can bus handle 
+    int canH1;              // the can bus 1 handle 
+    int canH2;              // the can bus 2 handle 
     char errmsg[100];       // stores any error messages
 	int status = 0;         // stores any error codes
     char msg[CANMSGLENGTH]; // stores a message received from the bus 
-	
+	int  can1en;			// is channel 1 enabled?
+	int  can2en;			// is channel 2 enabled?
+
     // clear the log
 	fclose(fopen(LOGFILE, "w"));
 	
 	// start up CAN
-    logs("Starting CAN...");
-    if ( (canH = can_init(0)) < 0)
+	can1en = 1;
+    logs("Starting CAN 1...");
+    if ( (canH1 = can_init(0)) < 0)
     {
-        // error. get the message, report it, and terminate
-        canGetErrorText(canH, errmsg, 100);
+        // error. get the message, report it
+        canGetErrorText(canH1, errmsg, 100);
         logs(errmsg);
-        printf("Could not init CAN: %s.\n", errmsg);
-		exit(EXIT_FAILURE);
+        printf("Could not init CAN 1: %s.\n", errmsg);
+		can1en = 0;
     }
-    
+	
+	can2en = 1;
+    logs("Starting CAN 2...");
+    if ( (canH2 = can_init(1)) < 0)
+    {
+        // error. get the message, report it
+        canGetErrorText(canH2, errmsg, 100);
+        logs(errmsg);
+        printf("Could not init CAN 2: %s.\n", errmsg);
+		can2en = 0;
+    }   
+	
+	// if neither channel started, exit
+	if (!can1en || !can2en)
+	{
+		printf("Could not open any CAN channels!\n");
+		exit(EXIT_FAILURE);
+	}
+
 	// start the ipc
     if (start_ipc() < 0)
     {
@@ -123,17 +145,29 @@ int main()
     logs("Entering main loop...");
     while (1)
 	{
-        // Get a message in range 0xA0 - 0XA0 (HMI Status Messages) 
-        status = can_get_msg(canH, msg, 0xA0, 0xA0);
-        if (status < 0)
-        {
-            canGetErrorText(status, errmsg, 100);
-            logs(errmsg);
-            printf("Could not read: %s\n", errmsg);
-        }
-        ipcputs(msg);
-        //limit speed
-		usleep(100);
+        memset(msg, 0, CANMSGLENGTH); 
+		// Get a message from bus 1 in range 0xA0 - 0xA0 
+        if (can1en == 1)
+		{
+			status = can_get_msg(canH1, msg, 0xA0, 0x1F1);
+			if (status == 0)
+			{
+				// add the bus number to the message
+				ipcputs("1-");
+        		ipcputs(msg);
+			}
+		}
+		// Get a message from bus 2 in range 0xA0 - 0x1F1
+		if (can2en == 1)
+		{
+			status = can_get_msg(canH2, msg, 0xA0, 0x1F1);
+			if (status == 0)
+			{
+				// add the bus number to the message
+				ipcputs("2-");
+        		ipcputs(msg);
+			}
+		}
 	}
 	return 0;
 }

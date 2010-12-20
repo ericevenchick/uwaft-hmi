@@ -50,18 +50,21 @@ int can_get_msg(int handle, char* msg, int wantidlow, int wantidhigh)
 { 
     long id;                    // id of message
     char data[CANMSGLENGTH];    // data bytes of message
-    unsigned int dlc;           // Data Length Code (how many bytes in the message)
+    unsigned int dlc;           // Data Length Code 
     unsigned int flags;         
     unsigned long timestamp;
     int i;
-
     // get the message from the Kvaser hardware 
-    canReadWait(handle, &id, data, &dlc, &flags, &timestamp, -1); 
+    if (canRead(handle, &id, data, &dlc, &flags, &timestamp) < 0)
+	{
+		// return immidately if no message was received
+		return -1;	
+	}
     // check if we have a message of requested ID
     if (id >= wantidlow && id <= wantidhigh)
     {
-        // if so, create a string in the format id-dlc-byte0-byte1-...-byteCANMSGLENGTH
-        sprintf(msg, "%ld-%u", id, dlc);
+        // if so, create a string in the format id-byte0-byte1-...-byteCANMSGLENGTH
+        sprintf(msg, "%ld", id);
         for (i=0; i < CANMSGLENGTH; i++)
         {
            sprintf(msg, "%s-%x", msg, data[i]);

@@ -1,9 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Main entry point for HMI. Creates CAN bus connector with canbusd and starts
 # the GUI 
-
-# TODO: 	
-#			Migrate glib file watch to here, so a logger can be implmented too
 
 import subprocess
 import os
@@ -13,8 +10,8 @@ import glib
 from gui import gui 
 
 # set files here
-CANBUSFILE = "canrx"
-GUICONFIGFILE = "gui-config"
+CANBUSFILE = "/home/eric/uwaft-hmi/canrx"
+GUICONFIGFILE = "/home/eric/uwaft-hmi/gui-config"
 
 class hmi:
 	def start_can(self):
@@ -49,12 +46,14 @@ class hmi:
 				sys.exit(1)
 	
 	def update(self, source, cond):
-		# handle messages from CAN bus
-	
-		# call the GUI update
-		self.gui.update(source, cond)
+		try:
+			# handle messages from CAN bus
 		
-		# return true to keep handling messages
+			# call the GUI update
+			self.gui.update(source, cond)
+			# return true to keep handling messages
+		except any:
+			pass
 		return True
 
 	def main(self):

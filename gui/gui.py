@@ -5,8 +5,8 @@ import os
 import glib
 import pages
 import canparse
-xsize = 750
-ysize = 500
+xsize = 1024
+ysize = 768
 
 next_button_tex = clutter.cogl.texture_new_from_file('/home/eric/uwaft-hmi/gui/img/next-button.svg', clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
 
@@ -25,7 +25,6 @@ class gui:
 			canid = int(data.split('-')[0])
 		except ValueError:
 			pass
-
 		# update display elements
 		for page in self.pages:
 			for el in page:
@@ -56,6 +55,7 @@ class gui:
 		# initialize the stage
 		self.stage = clutter.Stage()
 		self.stage.set_size(xsize,ysize)
+		#self.stage.set_fullscreen(True)
 		self.stage.set_color(clutter.Color(0,0,0))
 	    
 		# Next page button

@@ -59,7 +59,7 @@ class can_number(clutter.Text):
 				# no data was given
 				return
 			newtext = "%.1f" % value
-			self.set_text(self.original_text + " " + newtext + " " + self.units)
+			self.set_text(self.original_label + " " + newtext + " " + self.units)
 
 class can_bool(clutter.Texture):
 	def __init__(self, args):

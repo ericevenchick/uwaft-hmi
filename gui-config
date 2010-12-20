@@ -5,19 +5,13 @@
 #	Boolean:	page#,b,label,canbus,canmsgid,bit
 #	Page:		page#,p,pagename
 
-# THIS IS A SAMPLE!
 # the main page
-1,p,test
+2,p,test
 
-2,t,Page 2
-2,t,Key:,get_key
-2,b,Bit:,1,497,0
-2,b,Bit:,1,497,1
-2,b,Bit:,1,497,2
-2,b,Bit:,1,497,3
-2,b,Bit:,2,497,0
-2,b,Bit:,2,497,1
-2,b,Bit:,2,497,2
-2,b,Bit:,2,497,3
-2,b,H2:,1,160,3
-2,n,Brake:,%,1,241,8,8,0.392157
+1,t,Page 2
+1,b,Bit:,1,497,0
+1,b,Bit:,1,497,1
+1,b,Bit:,2,497,0
+1,b,Bit:,2,497,1
+1,n,Brake:,%,1,241,8,8,0.392157
+1,n,Throttle:,%,1,201,32,8,0.392157
