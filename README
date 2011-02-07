@@ -2,11 +2,11 @@ University of Waterloo Alternative Fuels Team HMI software
 
 canbusd uses a Kvaser Memorator CAN logger to watch the CAN bus.
 hmi:  		starts the HMI
-hmiload: 	start X windows with HMI only
+hmiload: 	start X server with HMI only
 gui-config: 	configuration file for display
 gui/ contains:
-	gui.py:			the GUI for the HMI
-	canparse.py: 	a library to parse specific CAN messages to useful values
-	pages.py:		user defined pages
+	gui.py:		the GUI for the HMI
+	canparse.py: 	a library to parse CAN messages
+	pages.py:	user defined pages
 	candisplay.py:	GUI elements to display CAN
 

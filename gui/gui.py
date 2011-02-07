@@ -5,8 +5,8 @@ import os
 import glib
 import pages
 import canparse
-xsize = 1024
-ysize = 768
+xsize = 1500
+ysize = 845
 
 next_button_tex = clutter.cogl.texture_new_from_file('/home/eric/uwaft-hmi/gui/img/next-button.svg', clutter.cogl.TEXTURE_NO_SLICING, clutter.cogl.PIXEL_FORMAT_ANY)
 
@@ -133,7 +133,7 @@ class gui:
 				# create a constant label (no handler)
 				newlabel = candisplay.can_label(args)
 				# find the position for element
-				y = 5+55*elcount[page][1]
+				y = 5+65*elcount[page][1]
 				if y > ysize-50:
 					# go to next column
 					y = 5
@@ -155,7 +155,7 @@ class gui:
 			# text display
 			if disptype == 't':
 				newlabel = candisplay.can_label(args)
-				y = 5+55*elcount[page][1]
+				y = 5+65*elcount[page][1]
 				if y > ysize-50:
 					y = 5
 					elcount[page][0] = elcount[page][0]+1
@@ -168,7 +168,7 @@ class gui:
 			# number display
 			if disptype == 'n':
 				newlabel = candisplay.can_number(args)
-				y = 5+55*elcount[page][1]
+				y = 5+65*elcount[page][1]
 				if y > ysize-50:
 					y = 5
 					elcount[page][0] = elcount[page][0]+1

@@ -5,13 +5,10 @@
 #	Boolean:	page#,b,label,canbus,canmsgid,bit
 #	Page:		page#,p,pagename
 
-# the main page
-2,p,test
+# the home page
+1,p,home
 
-1,t,Page 2
-1,b,Bit:,1,497,0
-1,b,Bit:,1,497,1
-1,b,Bit:,2,497,0
-1,b,Bit:,2,497,1
-1,n,Brake:,%,1,241,8,8,0.392157
-1,n,Throttle:,%,1,201,32,8,0.392157
+# this page displays the throttle and brake position
+2,t,Test Page
+2,n,Brake:,%,1,241,8,8,0.392157
+2,n,Throttle:,%,1,201,32,8,0.392157
